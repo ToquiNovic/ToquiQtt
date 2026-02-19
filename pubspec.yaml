@@ -1,5 +1,5 @@
 name: toquiqtt
-description: "A new Flutter project."
+description: "Aplicación móvil para el monitoreo y gestión de dispositivos IoT mediante el protocolo MQTT, desarrollada con una arquitectura robusta y escalable."
 publish_to: "none"
 
 version: 1.0.0+1
