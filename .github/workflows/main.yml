@@ -1,4 +1,4 @@
-name: Build ToquiMQTT Release
+name: Build ToquiQTT Release
 
 on:
     push:
@@ -10,7 +10,7 @@ permissions:
 
 jobs:
     build:
-        name: Build and Release ToquiMQTT APK
+        name: Build and Release ToquiQTT APK
         runs-on: ubuntu-latest
         steps:
             - uses: actions/checkout@v4
@@ -30,12 +30,14 @@ jobs:
             - run: flutter pub run flutter_launcher_icons
 
             - run: flutter build apk --release
+            - name: Rename APK
+              run: mv build/app/outputs/flutter-apk/app-release.apk build/app/outputs/flutter-apk/ToquiQTT-v1.0.0-b${{ github.run_number }}.apk
 
             - name: Push to Releases
               uses: ncipollo/release-action@v1
               with:
-                  artifacts: "build/app/outputs/flutter-apk/app-release.apk"
+                  artifacts: "build/app/outputs/flutter-apk/ToquiQTT-v1.0.0-b${{ github.run_number }}.apk"
                   tag: v1.0.0-${{ github.run_number }}
                   name: Release v1.0.0 (Build ${{ github.run_number }})
-                  body: "Nueva versión automatizada de ToquiMQTT."
+                  body: "Nueva versión automatizada de ToquiQTT."
                   token: ${{ secrets.GITHUB_TOKEN }}
