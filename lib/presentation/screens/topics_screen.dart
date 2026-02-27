@@ -9,6 +9,7 @@ import '../widgets/topics/subscribe_fab.dart';
 import '../components/connection_state_views.dart';
 import '../components/custom_tab_bar.dart';
 import '../widgets/broker_info_card.dart';
+import '../../data/repositories/subscription_repository.dart';
 
 class TopicsScreen extends StatelessWidget {
   final Broker broker;
@@ -17,7 +18,8 @@ class TopicsScreen extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return BlocProvider(
-      create: (context) => MqttBloc()..add(ConnectToBroker(broker)),
+      create: (context) =>
+          MqttBloc(SubscriptionRepository())..add(ConnectToBroker(broker)),
       child: DefaultTabController(
         length: 2,
         child: _TopicsView(fallbackBroker: broker),
@@ -51,7 +53,7 @@ class _TopicsView extends StatelessWidget {
                     children: [
                       MessagesTabView(messages: state.latestMessages),
                       TopicsTabView(
-                        topics: state.subscribedTopics,
+                        subscriptions: state.subscriptions,
                         messages: state.latestMessages,
                       ),
                     ],

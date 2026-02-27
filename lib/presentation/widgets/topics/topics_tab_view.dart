@@ -1,29 +1,34 @@
 import 'package:flutter/material.dart';
 import '../topic_list_tile.dart';
 import '../../components/connection_state_views.dart';
+import '../../../data/models/subscription_model.dart';
 
 class TopicsTabView extends StatelessWidget {
-  final List<String> topics;
+  final List<MqttSubscription> subscriptions;
   final Map<String, String> messages;
 
   const TopicsTabView({
     super.key,
-    required this.topics,
+    required this.subscriptions,
     required this.messages,
   });
 
   @override
   Widget build(BuildContext context) {
-    if (topics.isEmpty) return const EmptyStateView(msg: "Sin suscripciones");
+    if (subscriptions.isEmpty) {
+      return const EmptyStateView(msg: "Sin suscripciones");
+    }
 
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 15),
-      itemCount: topics.length,
+      itemCount: subscriptions.length,
       itemBuilder: (context, index) {
-        final topic = topics[index];
+        final sub = subscriptions[index];
+        final topicKey = sub.topic;
+
         return TopicListTile(
-          topic: topic,
-          value: messages[topic] ?? "Esperando...",
+          subscription: sub,
+          value: messages[topicKey] ?? "Esperando...",
         );
       },
     );

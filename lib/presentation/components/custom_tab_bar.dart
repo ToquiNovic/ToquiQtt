@@ -21,7 +21,7 @@ class CustomTabBar extends StatelessWidget {
         unselectedLabelColor: Colors.blueGrey,
         tabs: const [
           Tab(text: "Mensajes", icon: Icon(Icons.mail_outline, size: 20)),
-          Tab(text: "Tópicos", icon: Icon(Icons.list_alt, size: 20)),
+          Tab(text: "Suscripciones", icon: Icon(Icons.subscriptions, size: 20)),
         ],
       ),
     );

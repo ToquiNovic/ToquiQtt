@@ -1,3 +1,4 @@
+// data/models/broker_model.dart
 import 'package:uuid/uuid.dart';
 
 class Broker {
