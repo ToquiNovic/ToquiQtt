@@ -4,6 +4,7 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:mqtt_client/mqtt_server_client.dart';
 import 'package:mqtt_client/mqtt_client.dart';
 import '../../data/models/broker_model.dart';
+import '../../data/models/message_model.dart';
 import '../../data/models/subscription_model.dart';
 import '../../data/repositories/subscription_repository.dart';
 
@@ -31,17 +32,35 @@ class _MessageReceived extends MqttEvent {
   _MessageReceived(this.topic, this.message);
 }
 
+class PublishMessage extends MqttEvent {
+  final String topic;
+  final String payload;
+  final int qos;
+  final bool retain;
+
+  PublishMessage({
+    required this.topic,
+    required this.payload,
+    this.qos = 0,
+    this.retain = false,
+  });
+}
+
+class ClearChatHistory extends MqttEvent {}
+
 // --- Estado ---
 class MqttState {
   final MqttConnectionState connectionState;
   final List<MqttSubscription> subscriptions;
   final Map<String, String> latestMessages;
+  final List<ReceivedMessage> allMessages;
   final Broker? currentBroker;
 
   MqttState({
     this.connectionState = MqttConnectionState.disconnected,
     this.subscriptions = const <MqttSubscription>[],
     this.latestMessages = const <String, String>{},
+    this.allMessages = const [],
     this.currentBroker,
   });
 
@@ -49,12 +68,14 @@ class MqttState {
     MqttConnectionState? connectionState,
     List<MqttSubscription>? subscriptions,
     Map<String, String>? latestMessages,
+    List<ReceivedMessage>? allMessages,
     Broker? currentBroker,
   }) {
     return MqttState(
       connectionState: connectionState ?? this.connectionState,
       subscriptions: subscriptions ?? this.subscriptions,
       latestMessages: latestMessages ?? this.latestMessages,
+      allMessages: allMessages ?? this.allMessages,
       currentBroker: currentBroker ?? this.currentBroker,
     );
   }
@@ -71,12 +92,14 @@ class MqttBloc extends Bloc<MqttEvent, MqttState> {
       dev.log('Iniciando conexión a ${event.broker.host}', name: 'MQTT_BLOC');
 
       final savedSubs = await repository.getSubscriptions(event.broker.id);
+      final savedHistory = await repository.getMessageHistory(event.broker.id);
 
       emit(
         state.copyWith(
           connectionState: MqttConnectionState.connecting,
           currentBroker: event.broker,
           subscriptions: savedSubs,
+          allMessages: savedHistory,
         ),
       );
 
@@ -153,10 +176,55 @@ class MqttBloc extends Bloc<MqttEvent, MqttState> {
       }
     });
 
-    on<_MessageReceived>((event, emit) {
-      final newMessages = Map<String, String>.from(state.latestMessages);
-      newMessages[event.topic] = event.message;
-      emit(state.copyWith(latestMessages: newMessages));
+    on<_MessageReceived>((event, emit) async {
+      final newMessage = ReceivedMessage(
+        topic: event.topic,
+        payload: event.message,
+        timestamp: DateTime.now(),
+      );
+
+      final updatedMessages = List<ReceivedMessage>.from(state.allMessages)
+        ..insert(0, newMessage);
+
+      if (state.currentBroker != null) {
+        await repository.saveMessageHistory(
+          state.currentBroker!.id,
+          updatedMessages,
+        );
+      }
+
+      emit(state.copyWith(allMessages: updatedMessages));
+    });
+
+    on<ClearChatHistory>((event, emit) async {
+      if (state.currentBroker != null) {
+        await repository.clearMessageHistory(state.currentBroker!.id);
+      }
+      emit(state.copyWith(allMessages: []));
+    });
+
+    on<PublishMessage>((event, emit) async {
+      if (client?.connectionStatus?.state == MqttConnectionState.connected) {
+        try {
+          final builder = MqttClientPayloadBuilder();
+          builder.addString(event.payload);
+
+          final qos = MqttQos.values[event.qos.clamp(0, 2)];
+
+          client!.publishMessage(
+            event.topic,
+            qos,
+            builder.payload!,
+            retain: event.retain,
+          );
+
+          dev.log('Mensaje publicado en: ${event.topic}', name: 'MQTT_BLOC');
+        } catch (e) {
+          dev.log('Error al publicar mensaje', name: 'MQTT_BLOC', error: e);
+        }
+      } else {
+        dev.log('No se pudo publicar: Cliente no conectado', name: 'MQTT_BLOC');
+      }
     });
   }
 

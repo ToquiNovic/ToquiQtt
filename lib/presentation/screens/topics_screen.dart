@@ -5,11 +5,11 @@ import '../../data/models/broker_model.dart';
 import '../widgets/topics/topics_app_bar.dart';
 import '../widgets/topics/messages_tab_view.dart';
 import '../widgets/topics/topics_tab_view.dart';
-import '../widgets/topics/subscribe_fab.dart';
 import '../components/connection_state_views.dart';
 import '../components/custom_tab_bar.dart';
 import '../widgets/broker_info_card.dart';
 import '../../data/repositories/subscription_repository.dart';
+import '../widgets/topics/multi_action_fab.dart';
 
 class TopicsScreen extends StatelessWidget {
   final Broker broker;
@@ -51,7 +51,10 @@ class _TopicsView extends StatelessWidget {
                 Expanded(
                   child: TabBarView(
                     children: [
-                      MessagesTabView(messages: state.latestMessages),
+                      MessagesTabView(
+                        allMessages: state.allMessages,
+                        subscriptions: state.subscriptions,
+                      ),
                       TopicsTabView(
                         subscriptions: state.subscriptions,
                         messages: state.latestMessages,
@@ -64,7 +67,7 @@ class _TopicsView extends StatelessWidget {
           );
         },
       ),
-      floatingActionButton: const SubscribeFab(),
+      floatingActionButton: const MultiActionFab(),
     );
   }
 }

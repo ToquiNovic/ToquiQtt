@@ -47,11 +47,14 @@ class Broker {
 
   // --- HELPERS ---
 
-  factory Broker.createDefault() => Broker(
-    id: const Uuid().v4(),
-    name: '',
-    host: '',
-    port: 1883,
-    clientId: 'toqui_${const Uuid().v4().substring(0, 5)}',
-  );
+  factory Broker.createDefault() {
+    final uniqueId = const Uuid().v4();
+    return Broker(
+      id: uniqueId,
+      name: '',
+      host: '',
+      port: 1883,
+      clientId: 'toqui_${uniqueId.substring(0, 5)}',
+    );
+  }
 }

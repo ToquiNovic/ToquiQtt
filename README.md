@@ -60,7 +60,7 @@ lib/
 ### 1️⃣ Clonar el repositorio
 
 ```bash
-git clone https://github.com/tu-usuario/toquiqtt.git
+git clone https://github.com/ToquiNovic/ToquiQTT
 ```
 
 ### 2️⃣ Instalar dependencias

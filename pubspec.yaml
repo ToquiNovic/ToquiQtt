@@ -17,9 +17,11 @@ dependencies:
   mqtt_client: ^10.11.9
   shared_preferences: ^2.5.4
   equatable: ^2.0.8
-  uuid: ^4.5.2
+  uuid: ^4.5.3
   google_fonts: ^8.0.2
   flutter_launcher_icons: ^0.14.4
+  intl: ^0.20.2
+  flutter_speed_dial: ^7.0.0
 
 dev_dependencies:
   flutter_test:
